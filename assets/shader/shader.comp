@@ -1,0 +1,46 @@
+#version 460 core
+
+layout(rgba32f, binding = 0) uniform writeonly image2D outputImage;
+layout(binding = 1) uniform sampler2D inputImage;
+layout(std430, binding = 2) buffer outputBuffer {
+    int blocked;
+};
+
+layout(location = 0) uniform float time;
+layout(location = 1) uniform vec3 pos1;
+layout(location = 2) uniform vec3 pos2;
+layout(local_size_x = 8, local_size_y = 8) in;
+
+void main()
+{
+    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size        = imageSize(outputImage);
+    vec2  uv          = vec2(pixelCoords) / vec2(size);
+
+    if (pixelCoords.x >= size.x || pixelCoords.y >= size.y) {
+        return;
+    }
+
+    vec3 p0 = vec3(uv, texture(inputImage, uv).r * 2.0);
+    vec3 p1 = pos1;
+    vec3 p2 = pos2;
+
+    vec3 ab = p2 - p1;
+    vec3 u  = normalize(ab);
+
+    float l = length(ab);
+    float t = clamp(dot(p0 - p1, u), 0.0, l);
+
+    vec3 v = p1 + t * u;
+
+    float r = step(length(p0.xy - v.xy), 0.000001);
+
+    vec4 color = vec4(vec3(p0.z), 1.0);
+
+    if (0.0 < r && v.z < p0.z) {
+        atomicMax(blocked, 1);
+        color = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+
+    imageStore(outputImage, pixelCoords, color);
+}
