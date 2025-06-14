@@ -4,13 +4,14 @@
 
 #define WIDTH 720
 #define HEIGHT 720
-#define WORK_GROUP_SIZE 8
+#define WORK_GROUP_SIZE_X 8
+#define WORK_GROUP_SIZE_Y 4
 
 static const char* shaderPath  = "assets/shader/shader.comp";
 static const char* texturePath = "assets/stratis.png";
 
-static GLuint numGroupsX = (WIDTH + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE;
-static GLuint numGroupsY = (HEIGHT + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE;
+static GLuint numGroupsX = (WIDTH + WORK_GROUP_SIZE_X - 1) / WORK_GROUP_SIZE_X;
+static GLuint numGroupsY = (HEIGHT + WORK_GROUP_SIZE_Y - 1) / WORK_GROUP_SIZE_Y;
 static GLuint program;
 
 GLuint createShaderProgram(GLenum type, const char* path)
